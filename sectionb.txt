@@ -1,0 +1,45 @@
+<?php require_once 'login.php';
+ $conn = new mysqli($hn, $un, $pw, $db);
+ if ($conn->connect_error) die($conn->connect_error);
+echo <<<_END
+<html lang="en-US">
+<head>
+<script src="https://www.gstatic.com/charts/loader.js"></script>
+<script type="text/javascript">
+google.charts.load('current', {'packages':['corechart']});
+google.charts.setOnLoadCallback(drawChart);
+function drawChart() {
+  var data = google.visualization.arrayToDataTable([
+  ['Task', 'Hours per Day']
+_END;
+  $query  = "SELECT category,count(*)as cnt FROM classics group by category";
+  $result = $conn->query($query);
+  if (!$result) die ("Database access failed: " . $conn->error);
+
+  $rows = $result->num_rows;
+  
+  for ($j = 0 ; $j < $rows ; ++$j)
+  {
+    $result->data_seek($j);
+    $row = $result->fetch_array(MYSQLI_NUM);
+
+    echo 
+  ",['".$row[0]."',".$row[1]."]";
+  }
+echo <<<_END
+]);
+
+  var options = {'title':'SectionB','width':550, 'height':400};
+  var chart = new google.visualization.PieChart(document.getElementById('piechart'));
+  chart.draw(data, options);
+}
+_END;
+echo <<<_END
+</script>
+</head>
+<body>
+<div id="piechart"></div>
+</body>
+</html>
+_END;
+?>
